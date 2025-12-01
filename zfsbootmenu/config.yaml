@@ -1,0 +1,4 @@
+Kernel:
+  CommandLine: ip=dhcp loglevel=0 nomodeset quiet rd.neednet=1
+EFI:
+  Enabled: true

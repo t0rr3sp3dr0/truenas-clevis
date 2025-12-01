@@ -1,0 +1,7 @@
+/build
+/dracut.conf.d/common.conf
+/dracut.conf.d/omit-drivers.conf
+/dracut.conf.d/recovery.conf
+/dracut.conf.d/user_hooks.conf
+/dracut.conf.d/zfsbootmenu.conf
+/zbm-builder.sh
