@@ -1,0 +1,15 @@
+name: Main
+on: push
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+      - name: Build Artifacts
+        run: make build
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          path: zfsbootmenu/build/vmlinuz.EFI
