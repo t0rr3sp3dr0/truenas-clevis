@@ -7,7 +7,7 @@ cat << EOF > "${KEXEC}"
 #!/bin/sh
 set -e
 
-INITRD='/run/initrd.cpio'
+INITRD='/run/zbm/initrd.cpio'
 
 if [ -e "\${INITRD}" ]
 then

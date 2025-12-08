@@ -22,4 +22,4 @@ dracut.conf.d/common.conf:
 	curl -LO --output-dir '$(dir $@)' 'https://github.com/zbm-dev/zfsbootmenu/raw/$(REF)/etc/zfsbootmenu/$@'
 
 build/vmlinuz.EFI: dracut.conf.d/common.conf dracut.conf.d/omit-drivers.conf dracut.conf.d/recovery.conf dracut.conf.d/zfsbootmenu.conf zbm-builder.sh
-	./zbm-builder.sh -i 'ghcr.io/zbm-dev/zbm-builder:$(TAG)'
+	./zbm-builder.sh -i 'ghcr.io/zbm-dev/zbm-builder:$(TAG)' -- -p 'clevis'
