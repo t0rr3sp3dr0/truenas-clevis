@@ -67,24 +67,9 @@ chmod +x "\${F}"
 D="\${MNT}/root/.local/bin"
 mkdir -p "\${D}"
 
-F="\${D}/clevis-zfs-list"
+F="\${D}/clevis"
 echo '#!/bin/bash -e' > "\${F}"
-echo '# TODO(t0rr3sp3dr0): implement this' >> "\${F}"
-chmod +x "\${F}"
-
-F="\${D}/clevis-zfs-bind"
-echo '#!/bin/bash -e' > "\${F}"
-echo '# TODO(t0rr3sp3dr0): implement this' >> "\${F}"
-chmod +x "\${F}"
-
-F="\${D}/clevis-zfs-unbind"
-echo '#!/bin/bash -e' > "\${F}"
-echo '# TODO(t0rr3sp3dr0): implement this' >> "\${F}"
-chmod +x "\${F}"
-
-F="\${D}/clevis-zfs-unlock"
-echo '#!/bin/bash -e' > "\${F}"
-echo '# TODO(t0rr3sp3dr0): implement this' >> "\${F}"
+echo 'echo -e "\${0##*/}: This tool needs to be executed from ZFSBootMenu." && exit 2' >> "\${F}"
 chmod +x "\${F}"
 EOF
 chmod +x "${F}"
