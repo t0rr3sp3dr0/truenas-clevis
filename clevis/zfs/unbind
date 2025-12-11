@@ -1,0 +1,98 @@
+#!/bin/bash -e
+
+SUMMARY='Unbinds pin from a ZFS filesystem or volume'
+
+function ::usage {
+    exec 1>&2
+    echo
+    echo 'Usage: clevis zfs unbind -d DEV -s SLT'
+    echo
+    echo "${SUMMARY}:"
+    echo
+    echo '  -d DEV    The ZFS filesystem or volume on which to perform pin unbinding'
+    echo
+    echo '  -s SLT    The pin slot to use'
+    echo
+    exit 2
+}
+
+if [ "${#}" -eq 1 ] && [ "${1}" = '--summary' ]
+then
+    echo "${SUMMARY}"
+    exit 0
+fi
+
+. clevis-zfs-lib
+
+while getopts 'd:s:' 'OPT'
+do
+    case "${OPT}" in
+        d)
+            DEV="${OPTARG}"
+            ;;
+        s)
+            SLT="${OPTARG}"
+            ;;
+        *)
+            ::usage
+            ;;
+    esac
+done
+
+if [ -z "${DEV}" ]
+then
+    ::usage
+fi
+
+if [ -z "${SLT}" ]
+then
+    ::usage
+fi
+
+if ! VER="$(clevis::zfs::get_dev_ver "${DEV}")"
+then
+    echo -e "FAILED TO RETRIEVE clevis-zfs SCHEMA VERSION: ${DEV}"
+    exit 1
+fi
+
+if ! clevis::zfs::tst_dev_cur "${DEV}"
+then
+    echo -e "clevis-zfs METADATA IS INCONSISTENT: ${DEV}"
+    exit 1
+fi
+
+if ! SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
+then
+    echo -e "FAILED TO RETRIEVE clevis-zfs SLOT COUNT: ${DEV}"
+    exit 1
+fi
+
+if ! B10="$((16#${SLT}))" || ! SLT="$(printf '%02x' "${B10}")" || [ "${B10}" -ge "${SLTS}" ]
+then
+    echo -e "clevis-zfs SLOT NOT FOUND: ${SLT}"
+    exit 1
+fi
+
+if ! clevis::zfs::bak_dev "${DEV}"
+then
+    echo -e "clevis-zfs METADATA BACKUP FAILED: ${DEV}"
+    exit 1
+fi
+
+if ! clevis::zfs::set_dev_cur_tag "${DEV}"
+then
+    echo -e "clevis-zfs METADATA LOCK FAILED: ${DEV}"
+    exit 1
+fi
+
+if ! clevis::zfs::del_dev_slt "${DEV}" "${SLT}"
+then
+    echo -e "clevis-zfs SLOT DEALLOCATION FAILED: ${DEV}"
+    exit 1
+fi
+
+if ! clevis::zfs::set_dev_cur_gat "${DEV}"
+then
+    echo -e "clevis-zfs METADATA UNLOCK FAILED: ${DEV}"
+    exit 1
+fi

@@ -1,0 +1,100 @@
+#!/bin/bash -e
+
+SUMMARY='Unlocks ZFS filesystems and volumes'
+
+function ::usage {
+    exec 1>&2
+    echo
+    echo 'Usage: clevis zfs unlock [-d DEV] [-s SLT]'
+    echo
+    echo "${SUMMARY}:"
+    echo
+    echo '  -d DEV    The ZFS filesystem or volume on which to perform unlocking'
+    echo
+    echo '  -s SLT    The pin slot to use'
+    echo
+    exit 2
+}
+
+if [ "${#}" -eq 1 ] && [ "${1}" = '--summary' ]
+then
+    echo "${SUMMARY}"
+    exit 0
+fi
+
+. clevis-zfs-lib
+
+function ::unlock {
+    local DEV="${1}"
+    local SLT="${2}"
+
+    local JWE="$(clevis::zfs::get_dev_slt_jwe "${DEV}" "${SLT}")"
+
+    echo -n "${JWE}" | clevis decrypt | zfs load-key -L 'prompt' "${DEV}"
+}
+
+while getopts 'd:s:' 'OPT'
+do
+    case "${OPT}" in
+        d)
+            DEV="${OPTARG}"
+            ;;
+        s)
+            SLT="${OPTARG}"
+            ;;
+        *)
+            ::usage
+            ;;
+    esac
+done
+
+if [ -n "${DEV}" ]
+then
+    DEVS="${DEV}"
+else
+    DEVS="$(clevis::zfs::get_devs)"
+fi
+
+for DEV in ${DEVS}
+do
+    KST="$(clevis::zfs::get_dev_kst "${DEV}")"
+
+    if [ "${KST}" != 'unavailable' ]
+    then
+        continue
+    fi
+
+    if [ -n "${SLT}" ]
+    then
+        ::unlock "${DEV}" "${SLT}" || true
+    else
+        SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
+
+        for (( I=0; I<SLTS; I++ ))
+        do
+            SLT="$(printf '%02x' "${I}")"
+
+            if ::unlock "${DEV}" "${SLT}"
+            then
+                break
+            fi
+
+            true
+        done
+    fi
+
+    KST="$(clevis::zfs::get_dev_kst "${DEV}")"
+
+    if [ "${KST}" != 'available' ]
+    then
+        ERR="${DEV} ${ERR}"
+        continue
+    fi
+done
+
+for DEV in ${ERR}
+do
+    echo -e "FAIL: ${DEV}"
+done
+
+[ -z "${ERR}" ]

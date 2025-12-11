@@ -1,0 +1,95 @@
+#!/bin/bash -e
+
+SUMMARY='Dumps key of ZFS filesystems and volumes to /run/zfs'
+
+function ::usage {
+    exec 1>&2
+    echo
+    echo 'Usage: clevis zfs dump [-d DEV] [-s SLT]'
+    echo
+    echo "${SUMMARY}:"
+    echo
+    echo '  -d DEV    The ZFS filesystem or volume on which to perform key dumping'
+    echo
+    echo '  -s SLT    The pin slot to use'
+    echo
+    exit 2
+}
+
+if [ "${#}" -eq 1 ] && [ "${1}" = '--summary' ]
+then
+    echo "${SUMMARY}"
+    exit 0
+fi
+
+. clevis-zfs-lib
+
+function ::dump {
+    local DEV="${1}"
+    local SLT="${2}"
+
+    local JWE="$(clevis::zfs::get_dev_slt_jwe "${DEV}" "${SLT}")"
+
+    echo -n "${JWE}" | clevis decrypt
+}
+
+while getopts 'd:s:' 'OPT'
+do
+    case "${OPT}" in
+        d)
+            DEV="${OPTARG}"
+            ;;
+        s)
+            SLT="${OPTARG}"
+            ;;
+        *)
+            ::usage
+            ;;
+    esac
+done
+
+DIR='/run/zfs'
+mkdir -m '0700' -p "${DIR}"
+
+if [ -n "${DEV}" ]
+then
+    DEVS="${DEV}"
+else
+    DEVS="$(clevis::zfs::get_devs)"
+fi
+
+for DEV in ${DEVS}
+do
+    KEY="${DIR}/${DEV//\//:}.key"
+
+    if [ -n "${SLT}" ]
+    then
+        ::dump "${DEV}" "${SLT}" > "${KEY}" || rm -f "${KEY}"
+    else
+        SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
+
+        for (( I=0; I<SLTS; I++ ))
+        do
+            SLT="$(printf '%02x' "${I}")"
+
+            if ::dump "${DEV}" "${SLT}" > "${KEY}"
+            then
+                break
+            fi
+
+            rm -f "${KEY}"
+        done
+    fi
+
+    if [ ! -e "${KEY}" ]
+    then
+        ERR="${DEV} ${ERR}"
+    fi
+done
+
+for DEV in ${ERR}
+do
+    echo -e "FAIL: ${DEV}"
+done
+
+[ -z "${ERR}" ]

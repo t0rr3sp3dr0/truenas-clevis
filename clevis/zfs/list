@@ -1,0 +1,62 @@
+#!/bin/bash -e
+
+SUMMARY='Lists pins bound to ZFS filesystems and volumes'
+
+function ::usage {
+    exec 1>&2
+    echo
+    echo 'Usage: clevis zfs list [-d DEV]'
+    echo
+    echo "${SUMMARY}:"
+    echo
+    echo '  -d DEV    The ZFS filesystem or volume on which to perform pin listing'
+    echo
+    exit 2
+}
+
+if [ "${#}" -eq 1 ] && [ "${1}" = '--summary' ]
+then
+    echo "${SUMMARY}"
+    exit 0
+fi
+
+. clevis-zfs-lib
+
+while getopts 'd:' 'OPT'
+do
+    case "${OPT}" in
+        d)
+            DEV="${OPTARG}"
+            ;;
+        *)
+            ::usage
+            ;;
+    esac
+done
+
+function ::list {
+    echo $'DEV\tSLT\tPIN\tCFG\t'
+
+    if [ -n "${DEV}" ]
+    then
+        DEVS="${DEV}"
+    else
+        DEVS="$(clevis::zfs::get_devs)"
+    fi
+
+    for DEV in ${DEVS}
+    do
+        SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
+
+        for (( I=0; I<SLTS; I++ ))
+        do
+            SLT="$(printf '%02x' "${I}")"
+            PIN="$(clevis::zfs::get_dev_slt_pin "${DEV}" "${SLT}")"
+            CFG="$(clevis::zfs::get_dev_slt_cfg "${DEV}" "${SLT}")"
+
+            echo "${DEV}"$'\t'"${SLT}"$'\t'"${PIN}"$'\t'"${CFG}"$'\t'
+        done
+    done
+}
+
+::list | column -t -s $'\t'
