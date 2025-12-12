@@ -1,11 +1,19 @@
 #!/bin/bash -e
 
-if [ "${0##*/}" != 'chroot' ]
+if [ "${0##*/}" = 'chroot' ]
 then
-    exec /usr/sbin/grub-install --version
+    MNT="${1}"
+
+    if [ "${3}" = '--version' ]
+    then
+        exec /usr/sbin/chroot "${@}"
+    fi
+else
+    if [ "${1}" = '--version' ]
+    then
+        exec /usr/sbin/grub-install "${@}"
+    fi
 fi
 
-mkdir -p "${1}/boot/efi/EFI/debian"
-curl -Lo "${1}/boot/efi/EFI/debian/grubx64.efi" --doh-url "${TRUENAS_CLEVIS_DOH_URL:-https://1.1.1.1/dns-query}" "${TRUENAS_CLEVIS_EFI_URL:-https://github.com/t0rr3sp3dr0/truenas-clevis/releases/latest/download/BOOTx64.EFI}"
-
-exec /usr/sbin/chroot "${1}" grub-install --version
+mkdir -p "${MNT}/boot/efi/EFI/debian"
+curl -Lo "${MNT}/boot/efi/EFI/debian/grubx64.efi" --doh-url "${TRUENAS_CLEVIS_DOH_URL:-https://1.1.1.1/dns-query}" "${TRUENAS_CLEVIS_EFI_URL:-https://github.com/t0rr3sp3dr0/truenas-clevis/releases/latest/download/BOOTx64.EFI}"
