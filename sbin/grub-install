@@ -6,6 +6,6 @@ then
 fi
 
 mkdir -p "${1}/boot/efi/EFI/debian"
-curl -Lo "${1}/boot/efi/EFI/debian/grubx64.efi" --doh-url "https://'"${DNS:-1.1.1.1}"'/dns-query" "https://github.com/t0rr3sp3dr0/truenas-clevis/releases/'"${RELEASE:-latest}"'/download/BOOTx64.EFI"
+curl -Lo "${1}/boot/efi/EFI/debian/grubx64.efi" --doh-url "${TRUENAS_CLEVIS_DOH_URL:-https://1.1.1.1/dns-query}" "${TRUENAS_CLEVIS_EFI_URL:-https://github.com/t0rr3sp3dr0/truenas-clevis/releases/latest/download/BOOTx64.EFI}"
 
 exec /usr/sbin/chroot "${1}" grub-install --version
