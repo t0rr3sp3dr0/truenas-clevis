@@ -3,11 +3,9 @@
 if [ "${0##*/}" = 'chroot' ]
 then
     MNT="${1}"
-
-    /usr/sbin/chroot "${@}"
-else
-    /usr/sbin/update-grub "${@}"
 fi
+
+"/usr/sbin/${0##*/}" "${@}"
 
 POOL="$(findmnt -n -o 'SOURCE' -M "${MNT}/boot/grub")"
 POOL="${POOL%%/*}"
