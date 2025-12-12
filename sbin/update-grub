@@ -1,0 +1,30 @@
+#!/bin/bash -e
+
+if [ "${0##*/}" = 'chroot' ]
+then
+    MNT="${1}"
+
+    /usr/sbin/chroot "${@}"
+else
+    /usr/sbin/update-grub "${@}"
+fi
+
+POOL="$(findmnt -n -o 'SOURCE' -M "${MNT}/boot/grub")"
+POOL="${POOL%%/*}"
+
+ROWS="$(zfs get -H -o 'name,value' -s 'local' 'truenas:kernel_version' 2>/dev/null)"
+ROWS="$(awk -v "re=^${POOL}/" '$1 ~ re { print $1 ";" $2; };' <<< "${ROWS}")"
+
+for ROW in ${ROWS}
+do
+    KDEV="${ROW%%;*}"
+    KVER="${ROW##*;}"
+
+    PREF="$(awk '{ gsub(/[+.]/, "[&]"); print; }' <<< "${KDEV/${POOL}}")"
+    SUFF="$(awk '{ gsub(/[+.]/, "[&]"); print; }' <<< "${KVER}")"
+    CMDS="$(awk -v "re=^${PREF}@/.+-${SUFF}$" '$1 == "linux" && $2 ~ re { $1 = ""; $2 = ""; sub("^" FS "+", ""); print; }' < "${MNT}/boot/grub/grub.cfg")"
+
+    zfs set 'org.zfsbootmenu:active=on' "${KDEV}"
+    zfs set "org.zfsbootmenu:commandline=${CMDS}" "${KDEV}"
+    zfs set "org.zfsbootmenu:kernel=${KVER}" "${KDEV}"
+done
