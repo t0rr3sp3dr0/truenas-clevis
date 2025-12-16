@@ -42,6 +42,13 @@ mkdir -m '0700' -p "${D}"
 F="${D}/boot-pool.key"
 ::passphrase > "${F}"
 
+if [ ! -e '/run/truenas-clevis' ]
+then
+	touch '/run/truenas-clevis'
+else
+	exec login -f "${USER}"
+fi
+
 F='/usr/lib/python3/dist-packages/truenas_installer/install.py'
 sed -Ei 's|"compatibility=grub2"|"compatibility=grub2",\n            "-o", "feature@encryption=enabled"|' "${F}"
 sed -Ei 's|"-O", "devices=off"|"-O", "devices=off",\n            "-O", "encryption=on",\n            "-O", "keyformat=passphrase",\n            "-O", f"keylocation=file:///run/zfs/{BOOT_POOL}.key"|' "${F}"
