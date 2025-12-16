@@ -17,12 +17,16 @@ Clevis on TrueNAS Community
 
 5. Proceed with the installation as usual.
 
-6. After rebooting, press _Escape_ to enter the recovery shell of ZFSBootMenu.
+6. After rebooting, press _`⎋ Esc`_ in the ZFSBootMenu screen.
 
-7. Execute `set_rw_pool 'boot-pool'` to reimport the pool as read-write.
+7. Enter the passphrase you set for _boot-pool_.
 
-8. Use the `clevis zfs bind -d 'boot-pool' "${PIN}" "${CFG}" <<< "${KEY}"` command to bind the ZFS encryption root with Clevis.
+8. Press _`⌃ Ctrl`_ + _`R`_ to enter the recovery shell.
 
-9. Press _`⌃ Ctrl`_ + _`⌥ Alt`_ + _`⌦ Del`_ to reboot the system.
+9. Execute `set_rw_pool 'boot-pool'` to reimport the pool as read-write.
 
-10. Upon booting, ZFSBootMenu will use Clevis to unlock _boot-pool_ and continue to TrueNAS.
+10. Use the `clevis zfs bind -d 'boot-pool' "${PIN}" "${CFG}" <<< "${KEY}"` command to bind the ZFS encryption root with Clevis.
+
+11. Press _`⌃ Ctrl`_ + _`⌥ Alt`_ + _`⌦ Del`_ to reboot the system.
+
+12. Upon booting, ZFSBootMenu will use Clevis to unlock _boot-pool_ and continue to TrueNAS.
