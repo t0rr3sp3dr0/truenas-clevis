@@ -2,423 +2,423 @@
 
 if [ "${#}" -eq 1 ] && [ "${1}" = '--summary' ]
 then
-    exit 2
+	exit 2
 fi
 
 function clevis::zfs::get_devs {
-    local DEVS
-    DEVS="$(zfs get -H -o 'name,value' 'encryptionroot' 2>/dev/null)"
-    DEVS="$(awk '$1 == $2 { print $2; };' <<< "${DEVS}")"
+	local DEVS
+	DEVS="$(zfs get -H -o 'name,value' 'encryptionroot' 2>/dev/null)"
+	DEVS="$(awk '$1 == $2 { print $2; };' <<< "${DEVS}")"
 
-    echo "${DEVS}"
+	echo "${DEVS}"
 }
 
 function clevis::zfs::get_dev_kst {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local KST
-    KST="$(zfs get -H -o 'value' 'keystatus' "${DEV}" 2>/dev/null)"
-    KST="$(awk '!/^-$/;' <<< "${KST}")"
+	local KST
+	KST="$(zfs get -H -o 'value' 'keystatus' "${DEV}" 2>/dev/null)"
+	KST="$(awk '!/^-$/;' <<< "${KST}")"
 
-    echo "${KST}"
+	echo "${KST}"
 }
 
 function clevis::zfs::get_dev_bak_tag {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local TAG
-    TAG="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:dat:bak_tag" "${DEV}" 2>/dev/null)"
-    TAG="$(awk '!/^-$/;' <<< "${TAG}")"
+	local TAG
+	TAG="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:dat:bak_tag" "${DEV}" 2>/dev/null)"
+	TAG="$(awk '!/^-$/;' <<< "${TAG}")"
 
-    echo "${TAG}"
+	echo "${TAG}"
 }
 
 function clevis::zfs::get_dev_bak_gat {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local GAT
-    GAT="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:dat:bak_gat" "${DEV}" 2>/dev/null)"
-    GAT="$(awk '!/^-$/;' <<< "${GAT}")"
+	local GAT
+	GAT="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:dat:bak_gat" "${DEV}" 2>/dev/null)"
+	GAT="$(awk '!/^-$/;' <<< "${GAT}")"
 
-    echo "${GAT}"
+	echo "${GAT}"
 }
 
 function clevis::zfs::set_dev_bak_tag {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local TAG="$(printf '%04x' "${RANDOM}")"
+	local TAG="$(printf '%04x' "${RANDOM}")"
 
-    zfs set "io.github.latchset.clevis:dat:bak_tag=${TAG}" "${DEV}"
+	zfs set "io.github.latchset.clevis:dat:bak_tag=${TAG}" "${DEV}"
 }
 
 function clevis::zfs::set_dev_bak_gat {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local GAT="$(clevis::zfs::get_dev_bak_tag "${DEV}")"
+	local GAT="$(clevis::zfs::get_dev_bak_tag "${DEV}")"
 
-    zfs set "io.github.latchset.clevis:dat:bak_gat=${GAT}" "${DEV}"
+	zfs set "io.github.latchset.clevis:dat:bak_gat=${GAT}" "${DEV}"
 }
 
 function clevis::zfs::tst_dev_bak {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local TAG="$(clevis::zfs::get_dev_bak_tag "${DEV}")"
-    local GAT="$(clevis::zfs::get_dev_bak_gat "${DEV}")"
+	local TAG="$(clevis::zfs::get_dev_bak_tag "${DEV}")"
+	local GAT="$(clevis::zfs::get_dev_bak_gat "${DEV}")"
 
-    [ -n "${TAG}" ] && [ "${TAG}" = "${GAT}" ]
+	[ -n "${TAG}" ] && [ "${TAG}" = "${GAT}" ]
 }
 
 function clevis::zfs::get_dev_cur_tag {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local TAG
-    TAG="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:dat:cur_tag" "${DEV}" 2>/dev/null)"
-    TAG="$(awk '!/^-$/;' <<< "${TAG}")"
+	local TAG
+	TAG="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:dat:cur_tag" "${DEV}" 2>/dev/null)"
+	TAG="$(awk '!/^-$/;' <<< "${TAG}")"
 
-    echo "${TAG}"
+	echo "${TAG}"
 }
 
 function clevis::zfs::get_dev_cur_gat {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local GAT
-    GAT="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:dat:cur_gat" "${DEV}" 2>/dev/null)"
-    GAT="$(awk '!/^-$/;' <<< "${GAT}")"
+	local GAT
+	GAT="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:dat:cur_gat" "${DEV}" 2>/dev/null)"
+	GAT="$(awk '!/^-$/;' <<< "${GAT}")"
 
-    echo "${GAT}"
+	echo "${GAT}"
 }
 
 function clevis::zfs::set_dev_cur_tag {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local TAG="$(printf '%04x' "${RANDOM}")"
+	local TAG="$(printf '%04x' "${RANDOM}")"
 
-    zfs set "io.github.latchset.clevis:dat:cur_tag=${TAG}" "${DEV}"
+	zfs set "io.github.latchset.clevis:dat:cur_tag=${TAG}" "${DEV}"
 }
 
 function clevis::zfs::set_dev_cur_gat {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local GAT="$(clevis::zfs::get_dev_cur_tag "${DEV}")"
+	local GAT="$(clevis::zfs::get_dev_cur_tag "${DEV}")"
 
-    zfs set "io.github.latchset.clevis:dat:cur_gat=${GAT}" "${DEV}"
+	zfs set "io.github.latchset.clevis:dat:cur_gat=${GAT}" "${DEV}"
 }
 
 function clevis::zfs::tst_dev_cur {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local TAG="$(clevis::zfs::get_dev_cur_tag "${DEV}")"
-    local GAT="$(clevis::zfs::get_dev_cur_gat "${DEV}")"
+	local TAG="$(clevis::zfs::get_dev_cur_tag "${DEV}")"
+	local GAT="$(clevis::zfs::get_dev_cur_gat "${DEV}")"
 
-    [ "${TAG}" = "${GAT}" ]
+	[ "${TAG}" = "${GAT}" ]
 }
 
 function clevis::zfs::kab_dev {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local KEYS
-    KEYS="$(zfs get -H -o 'property' -s 'local' 'all' "${DEV}" 2>/dev/null)"
-    KEYS="$(awk -v "re=^io[.]github[.]latchset[.]clevis:bak:" '$1 ~ re { print $1; };' <<< "${KEYS}")"
+	local KEYS
+	KEYS="$(zfs get -H -o 'property' -s 'local' 'all' "${DEV}" 2>/dev/null)"
+	KEYS="$(awk -v "re=^io[.]github[.]latchset[.]clevis:bak:" '$1 ~ re { print $1; };' <<< "${KEYS}")"
 
-    local KEY
-    for KEY in ${KEYS}
-    do
-        zfs inherit "${KEY}" "${DEV}"
-    done
+	local KEY
+	for KEY in ${KEYS}
+	do
+		zfs inherit "${KEY}" "${DEV}"
+	done
 }
 
 function clevis::zfs::bak_dev {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    clevis::zfs::tst_dev_cur "${DEV}"
-    clevis::zfs::set_dev_bak_tag "${DEV}"
-    clevis::zfs::kab_dev "${DEV}"
+	clevis::zfs::tst_dev_cur "${DEV}"
+	clevis::zfs::set_dev_bak_tag "${DEV}"
+	clevis::zfs::kab_dev "${DEV}"
 
-    local KEYS
-    KEYS="$(zfs get -H -o 'property' -s 'local' 'all' "${DEV}" 2>/dev/null)"
-    KEYS="$(awk -v "re=^io[.]github[.]latchset[.]clevis:cur:" '$1 ~ re { sub(re, "", $1); print $1; };' <<< "${KEYS}")"
+	local KEYS
+	KEYS="$(zfs get -H -o 'property' -s 'local' 'all' "${DEV}" 2>/dev/null)"
+	KEYS="$(awk -v "re=^io[.]github[.]latchset[.]clevis:cur:" '$1 ~ re { sub(re, "", $1); print $1; };' <<< "${KEYS}")"
 
-    local KEY
-    for KEY in ${KEYS}
-    do
-        local VAL="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:${KEY}" "${DEV}" 2>/dev/null)"
+	local KEY
+	for KEY in ${KEYS}
+	do
+		local VAL="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:${KEY}" "${DEV}" 2>/dev/null)"
 
-        zfs set "io.github.latchset.clevis:bak:${KEY}=${VAL}" "${DEV}"
-    done
+		zfs set "io.github.latchset.clevis:bak:${KEY}=${VAL}" "${DEV}"
+	done
 
-    clevis::zfs::set_dev_bak_gat "${DEV}"
+	clevis::zfs::set_dev_bak_gat "${DEV}"
 }
 
 function clevis::zfs::cer_dev {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local KEYS
-    KEYS="$(zfs get -H -o 'property' -s 'local' 'all' "${DEV}" 2>/dev/null)"
-    KEYS="$(awk -v "re=^io[.]github[.]latchset[.]clevis:cur:" '$1 ~ re { print $1; };' <<< "${KEYS}")"
+	local KEYS
+	KEYS="$(zfs get -H -o 'property' -s 'local' 'all' "${DEV}" 2>/dev/null)"
+	KEYS="$(awk -v "re=^io[.]github[.]latchset[.]clevis:cur:" '$1 ~ re { print $1; };' <<< "${KEYS}")"
 
-    local KEY
-    for KEY in ${KEYS}
-    do
-        zfs inherit "${KEY}" "${DEV}"
-    done
+	local KEY
+	for KEY in ${KEYS}
+	do
+		zfs inherit "${KEY}" "${DEV}"
+	done
 }
 
 function clevis::zfs::rec_dev {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    clevis::zfs::tst_dev_bak "${DEV}"
-    clevis::zfs::set_dev_cur_tag "${DEV}"
-    clevis::zfs::cer_dev "${DEV}"
+	clevis::zfs::tst_dev_bak "${DEV}"
+	clevis::zfs::set_dev_cur_tag "${DEV}"
+	clevis::zfs::cer_dev "${DEV}"
 
-    local KEYS
-    KEYS="$(zfs get -H -o 'property' -s 'local' 'all' "${DEV}" 2>/dev/null)"
-    KEYS="$(awk -v "re=^io[.]github[.]latchset[.]clevis:bak:" '$1 ~ re { sub(re, "", $1); print $1; };' <<< "${KEYS}")"
+	local KEYS
+	KEYS="$(zfs get -H -o 'property' -s 'local' 'all' "${DEV}" 2>/dev/null)"
+	KEYS="$(awk -v "re=^io[.]github[.]latchset[.]clevis:bak:" '$1 ~ re { sub(re, "", $1); print $1; };' <<< "${KEYS}")"
 
-    local KEY
-    for KEY in ${KEYS}
-    do
-        local VAL="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:bak:${KEY}" "${DEV}" 2>/dev/null)"
+	local KEY
+	for KEY in ${KEYS}
+	do
+		local VAL="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:bak:${KEY}" "${DEV}" 2>/dev/null)"
 
-        zfs set "io.github.latchset.clevis:cur:${KEY}=${VAL}" "${DEV}"
-    done
+		zfs set "io.github.latchset.clevis:cur:${KEY}=${VAL}" "${DEV}"
+	done
 
-    clevis::zfs::set_dev_cur_gat "${DEV}"
+	clevis::zfs::set_dev_cur_gat "${DEV}"
 }
 
 function clevis::zfs::get_dev_ver {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local VER
-    VER="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:ver" "${DEV}" 2>/dev/null)"
-    VER="$(awk '!/^-$/;' <<< "${VER}")"
+	local VER
+	VER="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:ver" "${DEV}" 2>/dev/null)"
+	VER="$(awk '!/^-$/;' <<< "${VER}")"
 
-    echo "${VER}"
+	echo "${VER}"
 }
 
 function clevis::zfs::set_dev_ver {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local VER='1'
+	local VER='1'
 
-    zfs set "io.github.latchset.clevis:cur:ver=${VER}" "${DEV}"
+	zfs set "io.github.latchset.clevis:cur:ver=${VER}" "${DEV}"
 }
 
 function clevis::zfs::get_dev_slts {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local SLTS
-    SLTS="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slts" "${DEV}" 2>/dev/null)"
-    SLTS="$(awk '!/^-?$/; /^-?$/ { print "0"; };' <<< "${SLTS}")"
+	local SLTS
+	SLTS="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slts" "${DEV}" 2>/dev/null)"
+	SLTS="$(awk '!/^-?$/; /^-?$/ { print "0"; };' <<< "${SLTS}")"
 
-    echo "${SLTS}"
+	echo "${SLTS}"
 }
 
 function clevis::zfs::new_dev_slt {
-    local DEV="${1}"
+	local DEV="${1}"
 
-    local SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
-    [ "${SLTS}" -lt 256 ]
+	local SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
+	[ "${SLTS}" -lt 256 ]
 
-    zfs set "io.github.latchset.clevis:cur:slts=$((SLTS+1))" "${DEV}"
+	zfs set "io.github.latchset.clevis:cur:slts=$((SLTS+1))" "${DEV}"
 
-    echo "$(printf '%02x' "${SLTS}")"
+	echo "$(printf '%02x' "${SLTS}")"
 }
 
 function clevis::zfs::del_dev_slt {
-    local DEV="${1}"
-    local SLT="${2}"
+	local DEV="${1}"
+	local SLT="${2}"
 
-    local SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
-    [ "${SLTS}" -gt 0 ]
+	local SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
+	[ "${SLTS}" -gt 0 ]
 
-    local I
-    for (( I="$((16#${SLT}+1))"; I<SLTS; I++ ))
-    do
-        local CUR_SLT="$(printf '%02x' "${I}")"
-        local PRV_SLT="$(printf '%02x' "$((I-1))")"
+	local I
+	for (( I="$((16#${SLT}+1))"; I<SLTS; I++ ))
+	do
+		local CUR_SLT="$(printf '%02x' "${I}")"
+		local PRV_SLT="$(printf '%02x' "$((I-1))")"
 
-        local PIN="$(clevis::zfs::get_dev_slt_pin "${DEV}" "${CUR_SLT}")"
-        clevis::zfs::set_dev_slt_pin "${DEV}" "${PRV_SLT}" "${PIN}"
+		local PIN="$(clevis::zfs::get_dev_slt_pin "${DEV}" "${CUR_SLT}")"
+		clevis::zfs::set_dev_slt_pin "${DEV}" "${PRV_SLT}" "${PIN}"
 
-        local CFG="$(clevis::zfs::get_dev_slt_cfg "${DEV}" "${CUR_SLT}")"
-        clevis::zfs::set_dev_slt_cfg "${DEV}" "${PRV_SLT}" "${CFG}"
+		local CFG="$(clevis::zfs::get_dev_slt_cfg "${DEV}" "${CUR_SLT}")"
+		clevis::zfs::set_dev_slt_cfg "${DEV}" "${PRV_SLT}" "${CFG}"
 
-        local JWE="$(clevis::zfs::get_dev_slt_jwe "${DEV}" "${CUR_SLT}")"
-        clevis::zfs::set_dev_slt_jwe "${DEV}" "${PRV_SLT}" "${JWE}"
-    done
+		local JWE="$(clevis::zfs::get_dev_slt_jwe "${DEV}" "${CUR_SLT}")"
+		clevis::zfs::set_dev_slt_jwe "${DEV}" "${PRV_SLT}" "${JWE}"
+	done
 
-    if [ -z "${CUR_SLT}" ]
-    then
-        local CUR_SLT="$(printf '%02x' "$((SLTS-1))")"
-    fi
+	if [ -z "${CUR_SLT}" ]
+	then
+		local CUR_SLT="$(printf '%02x' "$((SLTS-1))")"
+	fi
 
-    clevis::zfs::set_dev_slt_pin "${DEV}" "${CUR_SLT}" ''
-    clevis::zfs::set_dev_slt_cfg "${DEV}" "${CUR_SLT}" ''
-    clevis::zfs::set_dev_slt_jwe "${DEV}" "${CUR_SLT}" ''
+	clevis::zfs::set_dev_slt_pin "${DEV}" "${CUR_SLT}" ''
+	clevis::zfs::set_dev_slt_cfg "${DEV}" "${CUR_SLT}" ''
+	clevis::zfs::set_dev_slt_jwe "${DEV}" "${CUR_SLT}" ''
 
-    zfs set "io.github.latchset.clevis:cur:slts=$((SLTS-1))" "${DEV}"
+	zfs set "io.github.latchset.clevis:cur:slts=$((SLTS-1))" "${DEV}"
 }
 
 function clevis::zfs::get_dev_slt_pin {
-    local DEV="${1}"
-    local SLT="${2}"
+	local DEV="${1}"
+	local SLT="${2}"
 
-    local PIN
-    PIN="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_pin" "${DEV}" 2>/dev/null)"
-    PIN="$(awk '!/^-$/;' <<< "${PIN}")"
+	local PIN
+	PIN="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_pin" "${DEV}" 2>/dev/null)"
+	PIN="$(awk '!/^-$/;' <<< "${PIN}")"
 
-    echo "${PIN}"
+	echo "${PIN}"
 }
 
 function clevis::zfs::set_dev_slt_pin {
-    local DEV="${1}"
-    local SLT="${2}"
-    local PIN="${3}"
+	local DEV="${1}"
+	local SLT="${2}"
+	local PIN="${3}"
 
-    if [ -n "${PIN}" ]
-    then
-        zfs set "io.github.latchset.clevis:cur:slt_${SLT}_pin=${PIN}" "${DEV}"
-    else
-        zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_pin" "${DEV}"
-    fi
+	if [ -n "${PIN}" ]
+	then
+		zfs set "io.github.latchset.clevis:cur:slt_${SLT}_pin=${PIN}" "${DEV}"
+	else
+		zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_pin" "${DEV}"
+	fi
 }
 
 function clevis::zfs::get_dev_slt_cfg_prts {
-    local DEV="${1}"
-    local SLT="${2}"
+	local DEV="${1}"
+	local SLT="${2}"
 
-    local PRTS
-    PRTS="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prts" "${DEV}" 2>/dev/null)"
-    PRTS="$(awk '!/^-?$/; /^-?$/ { print "0"; };' <<< "${PRTS}")"
+	local PRTS
+	PRTS="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prts" "${DEV}" 2>/dev/null)"
+	PRTS="$(awk '!/^-?$/; /^-?$/ { print "0"; };' <<< "${PRTS}")"
 
-    echo "${PRTS}"
+	echo "${PRTS}"
 }
 
 function clevis::zfs::get_dev_slt_cfg {
-    local DEV="${1}"
-    local SLT="${2}"
+	local DEV="${1}"
+	local SLT="${2}"
 
-    local PRTS="$(clevis::zfs::get_dev_slt_cfg_prts "${DEV}" "${SLT}")"
+	local PRTS="$(clevis::zfs::get_dev_slt_cfg_prts "${DEV}" "${SLT}")"
 
-    local CFG
+	local CFG
 
-    local I
-    for (( I=0; I<PRTS; I++ ))
-    do
-        local IDX="$(printf '%02x' "${I}")"
-        local PRT="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prt_${IDX}" "${DEV}" 2>/dev/null)"
+	local I
+	for (( I=0; I<PRTS; I++ ))
+	do
+		local IDX="$(printf '%02x' "${I}")"
+		local PRT="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prt_${IDX}" "${DEV}" 2>/dev/null)"
 
-        CFG="${CFG}${PRT}"
-    done
+		CFG="${CFG}${PRT}"
+	done
 
-    echo "${CFG}"
+	echo "${CFG}"
 }
 
 function clevis::zfs::set_dev_slt_cfg {
-    local DEV="${1}"
-    local SLT="${2}"
-    local CFG="${3}"
+	local DEV="${1}"
+	local SLT="${2}"
+	local CFG="${3}"
 
-    local LEN="${#CFG}"
-    local CAP='8192'
+	local LEN="${#CFG}"
+	local CAP='8192'
 
-    local NEW_PRTS="$(((LEN+CAP-1)/CAP))"
-    [ "${NEW_PRTS}" -le 256 ]
+	local NEW_PRTS="$(((LEN+CAP-1)/CAP))"
+	[ "${NEW_PRTS}" -le 256 ]
 
-    local I
-    for (( I=0; I<NEW_PRTS; I++ ))
-    do
-        local OFF="$((I*CAP))"
-        local PRT="${CFG:OFF:CAP}"
-        local IDX="$(printf '%02x' "${I}")"
+	local I
+	for (( I=0; I<NEW_PRTS; I++ ))
+	do
+		local OFF="$((I*CAP))"
+		local PRT="${CFG:OFF:CAP}"
+		local IDX="$(printf '%02x' "${I}")"
 
-        zfs set "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prt_${IDX}=${PRT}" "${DEV}"
-    done
+		zfs set "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prt_${IDX}=${PRT}" "${DEV}"
+	done
 
-    local CUR_PRTS="$(clevis::zfs::get_dev_slt_cfg_prts "${DEV}" "${SLT}")"
+	local CUR_PRTS="$(clevis::zfs::get_dev_slt_cfg_prts "${DEV}" "${SLT}")"
 
-    local I
-    for (( I=NEW_PRTS; I<CUR_PRTS; I++ ))
-    do
-        local IDX="$(printf '%02x' "${I}")"
+	local I
+	for (( I=NEW_PRTS; I<CUR_PRTS; I++ ))
+	do
+		local IDX="$(printf '%02x' "${I}")"
 
-        zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prt_${IDX}" "${DEV}"
-    done
+		zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prt_${IDX}" "${DEV}"
+	done
 
-    if [ "${NEW_PRTS}" -gt 0 ]
-    then
-        zfs set "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prts=${NEW_PRTS}" "${DEV}"
-    else
-        zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prts" "${DEV}"
-    fi
+	if [ "${NEW_PRTS}" -gt 0 ]
+	then
+		zfs set "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prts=${NEW_PRTS}" "${DEV}"
+	else
+		zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_cfg_prts" "${DEV}"
+	fi
 }
 
 function clevis::zfs::get_dev_slt_jwe_prts {
-    local DEV="${1}"
-    local SLT="${2}"
+	local DEV="${1}"
+	local SLT="${2}"
 
-    local PRTS
-    PRTS="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prts" "${DEV}" 2>/dev/null)"
-    PRTS="$(awk '!/^-?$/; /^-?$/ { print "0"; };' <<< "${PRTS}")"
+	local PRTS
+	PRTS="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prts" "${DEV}" 2>/dev/null)"
+	PRTS="$(awk '!/^-?$/; /^-?$/ { print "0"; };' <<< "${PRTS}")"
 
-    echo "${PRTS}"
+	echo "${PRTS}"
 }
 
 function clevis::zfs::get_dev_slt_jwe {
-    local DEV="${1}"
-    local SLT="${2}"
+	local DEV="${1}"
+	local SLT="${2}"
 
-    local PRTS="$(clevis::zfs::get_dev_slt_jwe_prts "${DEV}" "${SLT}")"
+	local PRTS="$(clevis::zfs::get_dev_slt_jwe_prts "${DEV}" "${SLT}")"
 
-    local JWE
+	local JWE
 
-    local I
-    for (( I=0; I<PRTS; I++ ))
-    do
-        local IDX="$(printf '%02x' "${I}")"
-        local PRT="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prt_${IDX}" "${DEV}" 2>/dev/null)"
+	local I
+	for (( I=0; I<PRTS; I++ ))
+	do
+		local IDX="$(printf '%02x' "${I}")"
+		local PRT="$(zfs get -H -o 'value' -s 'local' "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prt_${IDX}" "${DEV}" 2>/dev/null)"
 
-        JWE="${JWE}${PRT}"
-    done
+		JWE="${JWE}${PRT}"
+	done
 
-    echo "${JWE}"
+	echo "${JWE}"
 }
 
 function clevis::zfs::set_dev_slt_jwe {
-    local DEV="${1}"
-    local SLT="${2}"
-    local JWE="${3}"
+	local DEV="${1}"
+	local SLT="${2}"
+	local JWE="${3}"
 
-    local LEN="${#JWE}"
-    local CAP='8192'
+	local LEN="${#JWE}"
+	local CAP='8192'
 
-    local NEW_PRTS="$(((LEN+CAP-1)/CAP))"
-    [ "${NEW_PRTS}" -le 256 ]
+	local NEW_PRTS="$(((LEN+CAP-1)/CAP))"
+	[ "${NEW_PRTS}" -le 256 ]
 
-    local I
-    for (( I=0; I<NEW_PRTS; I++ ))
-    do
-        local OFF="$((I*CAP))"
-        local PRT="${JWE:OFF:CAP}"
-        local IDX="$(printf '%02x' "${I}")"
+	local I
+	for (( I=0; I<NEW_PRTS; I++ ))
+	do
+		local OFF="$((I*CAP))"
+		local PRT="${JWE:OFF:CAP}"
+		local IDX="$(printf '%02x' "${I}")"
 
-        zfs set "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prt_${IDX}=${PRT}" "${DEV}"
-    done
+		zfs set "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prt_${IDX}=${PRT}" "${DEV}"
+	done
 
-    local CUR_PRTS="$(clevis::zfs::get_dev_slt_jwe_prts "${DEV}" "${SLT}")"
+	local CUR_PRTS="$(clevis::zfs::get_dev_slt_jwe_prts "${DEV}" "${SLT}")"
 
-    local I
-    for (( I=NEW_PRTS; I<CUR_PRTS; I++ ))
-    do
-        local IDX="$(printf '%02x' "${I}")"
+	local I
+	for (( I=NEW_PRTS; I<CUR_PRTS; I++ ))
+	do
+		local IDX="$(printf '%02x' "${I}")"
 
-        zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prt_${IDX}" "${DEV}"
-    done
+		zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prt_${IDX}" "${DEV}"
+	done
 
-    if [ "${NEW_PRTS}" -gt 0 ]
-    then
-        zfs set "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prts=${NEW_PRTS}" "${DEV}"
-    else
-        zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prts" "${DEV}"
-    fi
+	if [ "${NEW_PRTS}" -gt 0 ]
+	then
+		zfs set "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prts=${NEW_PRTS}" "${DEV}"
+	else
+		zfs inherit "io.github.latchset.clevis:cur:slt_${SLT}_jwe_prts" "${DEV}"
+	fi
 }

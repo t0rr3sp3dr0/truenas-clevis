@@ -32,7 +32,7 @@ mkdir -p "${D}"
 
 for F in /run/zfs/*.key
 do
-    cp -f "${F}" "${D}"
+	cp -f "${F}" "${D}"
 done
 
 D='scripts/local-bottom'

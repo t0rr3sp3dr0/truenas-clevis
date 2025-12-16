@@ -2,7 +2,7 @@
 
 if [ "${0##*/}" = 'chroot' ]
 then
-    MNT="${1}"
+	MNT="${1}"
 fi
 
 "/usr/sbin/${0##*/}" "${@}"
@@ -15,14 +15,14 @@ ROWS="$(awk -v "re=^${POOL}/" '$1 ~ re { print $1 ";" $2; };' <<< "${ROWS}")"
 
 for ROW in ${ROWS}
 do
-    KDEV="${ROW%%;*}"
-    KVER="${ROW##*;}"
+	KDEV="${ROW%%;*}"
+	KVER="${ROW##*;}"
 
-    PREF="$(awk '{ gsub(/[+.]/, "[&]"); print; }' <<< "${KDEV/${POOL}}")"
-    SUFF="$(awk '{ gsub(/[+.]/, "[&]"); print; }' <<< "${KVER}")"
-    CMDS="$(awk -v "re=^${PREF}@/.+-${SUFF}$" '$1 == "linux" && $2 ~ re { $1 = ""; $2 = ""; sub("^" FS "+", ""); print; }' < "${MNT}/boot/grub/grub.cfg")"
+	PREF="$(awk '{ gsub(/[+.]/, "[&]"); print; }' <<< "${KDEV/${POOL}}")"
+	SUFF="$(awk '{ gsub(/[+.]/, "[&]"); print; }' <<< "${KVER}")"
+	CMDS="$(awk -v "re=^${PREF}@/.+-${SUFF}$" '$1 == "linux" && $2 ~ re { $1 = ""; $2 = ""; sub("^" FS "+", ""); print; }' < "${MNT}/boot/grub/grub.cfg")"
 
-    zfs set 'org.zfsbootmenu:active=on' "${KDEV}"
-    zfs set "org.zfsbootmenu:commandline=${CMDS}" "${KDEV}"
-    zfs set "org.zfsbootmenu:kernel=${KVER}" "${KDEV}"
+	zfs set 'org.zfsbootmenu:active=on' "${KDEV}"
+	zfs set "org.zfsbootmenu:commandline=${CMDS}" "${KDEV}"
+	zfs set "org.zfsbootmenu:kernel=${KVER}" "${KDEV}"
 done

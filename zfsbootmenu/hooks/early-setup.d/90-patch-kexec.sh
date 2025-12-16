@@ -9,19 +9,19 @@ INITRD='/run/zbm/initrd.cpio'
 
 if [ -e "\${INITRD}" ]
 then
-    for ARG in "\${@}"
-    do
-        case "\${ARG}" in
-            --initrd=*)
-                set -- "\${@}" "--initrd=\${INITRD}"
-                ;;
-            *)
-                set -- "\${@}" "\${ARG}"
-                ;;
-        esac
+	for ARG in "\${@}"
+	do
+		case "\${ARG}" in
+			--initrd=*)
+				set -- "\${@}" "--initrd=\${INITRD}"
+				;;
+			*)
+				set -- "\${@}" "\${ARG}"
+				;;
+		esac
 
-        shift
-    done
+		shift
+	done
 fi
 
 exec /usr/sbin/kexec "\${@}"

@@ -3,151 +3,151 @@
 SUMMARY='Binds pin to a ZFS filesystem or volume'
 
 function ::usage {
-    exec 1>&2
-    echo
-    echo 'Usage: clevis zfs bind -d DEV [-s SLT] PIN CFG < KEY'
-    echo
-    echo "${SUMMARY}:"
-    echo
-    echo '  -d DEV    The ZFS filesystem or volume on which to perform pin binding'
-    echo
-    echo '  -s SLT    The pin slot to use'
-    echo
-    echo '     PIN    The Clevis pin to use'
-    echo
-    echo '     CFG    The Clevis pin config to use'
-    echo
-    echo '     KEY    The key to unlock the ZFS filesystem or volume'
-    echo
-    exit 2
+	exec 1>&2
+	echo
+	echo 'Usage: clevis zfs bind -d DEV [-s SLT] PIN CFG < KEY'
+	echo
+	echo "${SUMMARY}:"
+	echo
+	echo '  -d DEV    The ZFS filesystem or volume on which to perform pin binding'
+	echo
+	echo '  -s SLT    The pin slot to use'
+	echo
+	echo '     PIN    The Clevis pin to use'
+	echo
+	echo '     CFG    The Clevis pin config to use'
+	echo
+	echo '     KEY    The key to unlock the ZFS filesystem or volume'
+	echo
+	exit 2
 }
 
 if [ "${#}" -eq 1 ] && [ "${1}" = '--summary' ]
 then
-    echo "${SUMMARY}"
-    exit 0
+	echo "${SUMMARY}"
+	exit 0
 fi
 
 . clevis-zfs-lib
 
 while getopts 'd:s:' 'OPT'
 do
-    case "${OPT}" in
-        d)
-            DEV="${OPTARG}"
-            ;;
-        s)
-            SLT="${OPTARG}"
-            ;;
-        *)
-            ::usage
-            ;;
-    esac
+	case "${OPT}" in
+		d)
+			DEV="${OPTARG}"
+			;;
+		s)
+			SLT="${OPTARG}"
+			;;
+		*)
+			::usage
+			;;
+	esac
 done
 
 if [ -z "${DEV}" ]
 then
-    ::usage
+	::usage
 fi
 
 if ! PIN="${@:$((OPTIND++)):1}" || [ -z "${PIN}" ]
 then
-    ::usage
+	::usage
 fi
 
 if ! CFG="${@:$((OPTIND++)):1}" || [ -z "${CFG}" ]
 then
-    ::usage
+	::usage
 fi
 
 if ! JWE="$(clevis encrypt "${PIN}" "${CFG}")"
 then
-    echo -e "FAILED TO ENCRYPT KEY WITH clevis: ${PIN} ${CFG}"
-    exit 1
+	echo -e "FAILED TO ENCRYPT KEY WITH clevis: ${PIN} ${CFG}"
+	exit 1
 fi
 
 if ! VER="$(clevis::zfs::get_dev_ver "${DEV}")"
 then
-    echo -e "FAILED TO RETRIEVE clevis-zfs SCHEMA VERSION: ${DEV}"
-    exit 1
+	echo -e "FAILED TO RETRIEVE clevis-zfs SCHEMA VERSION: ${DEV}"
+	exit 1
 fi
 
 case "${VER}" in
-    '')
-        if ! clevis::zfs::set_dev_ver "${DEV}"
-        then
-            echo -e "FAILED TO SET clevis-zfs SCHEMA VERSION: ${DEV}"
-            exit 1
-        fi
-        ;;
-    1)
-        # NOP
-        ;;
-    *)
-        echo -e "UNSUPPORTED clevis-zfs SCHEMA VERSION: ${VER}"
-        exit 1
-        ;;
+	'')
+		if ! clevis::zfs::set_dev_ver "${DEV}"
+		then
+			echo -e "FAILED TO SET clevis-zfs SCHEMA VERSION: ${DEV}"
+			exit 1
+		fi
+		;;
+	1)
+		# NOP
+		;;
+	*)
+		echo -e "UNSUPPORTED clevis-zfs SCHEMA VERSION: ${VER}"
+		exit 1
+		;;
 esac
 
 if ! clevis::zfs::tst_dev_cur "${DEV}"
 then
-    echo -e "clevis-zfs METADATA IS INCONSISTENT: ${DEV}"
-    exit 1
+	echo -e "clevis-zfs METADATA IS INCONSISTENT: ${DEV}"
+	exit 1
 fi
 
 if [ -n "${SLT}" ]
 then
-    if ! SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
-    then
-        echo -e "FAILED TO RETRIEVE clevis-zfs SLOT COUNT: ${DEV}"
-        exit 1
-    fi
+	if ! SLTS="$(clevis::zfs::get_dev_slts "${DEV}")"
+	then
+		echo -e "FAILED TO RETRIEVE clevis-zfs SLOT COUNT: ${DEV}"
+		exit 1
+	fi
 
-    if ! B10="$((16#${SLT}))" || ! SLT="$(printf '%02x' "${B10}")" || [ "${B10}" -ge "${SLTS}" ]
-    then
-        echo -e "clevis-zfs SLOT NOT FOUND: ${SLT}"
-        exit 1
-    fi
+	if ! B10="$((16#${SLT}))" || ! SLT="$(printf '%02x' "${B10}")" || [ "${B10}" -ge "${SLTS}" ]
+	then
+		echo -e "clevis-zfs SLOT NOT FOUND: ${SLT}"
+		exit 1
+	fi
 fi
 
 if ! clevis::zfs::bak_dev "${DEV}"
 then
-    echo -e "clevis-zfs METADATA BACKUP FAILED: ${DEV}"
-    exit 1
+	echo -e "clevis-zfs METADATA BACKUP FAILED: ${DEV}"
+	exit 1
 fi
 
 if ! clevis::zfs::set_dev_cur_tag "${DEV}"
 then
-    echo -e "clevis-zfs METADATA LOCK FAILED: ${DEV}"
-    exit 1
+	echo -e "clevis-zfs METADATA LOCK FAILED: ${DEV}"
+	exit 1
 fi
 
 if [ -z "${SLT}" ] && ! SLT="$(clevis::zfs::new_dev_slt "${DEV}")"
 then
-    echo -e "clevis-zfs SLOT ALLOCATION FAILED: ${DEV}"
-    exit 1
+	echo -e "clevis-zfs SLOT ALLOCATION FAILED: ${DEV}"
+	exit 1
 fi
 
 if ! clevis::zfs::set_dev_slt_pin "${DEV}" "${SLT}" "${PIN}"
 then
-    echo -e "FAILED TO SET clevis-zfs SLOT PIN: ${DEV}"
-    exit 1
+	echo -e "FAILED TO SET clevis-zfs SLOT PIN: ${DEV}"
+	exit 1
 fi
 
 if ! clevis::zfs::set_dev_slt_cfg "${DEV}" "${SLT}" "${CFG}"
 then
-    echo -e "FAILED TO SET clevis-zfs SLOT CFG: ${DEV}"
-    exit 1
+	echo -e "FAILED TO SET clevis-zfs SLOT CFG: ${DEV}"
+	exit 1
 fi
 
 if ! clevis::zfs::set_dev_slt_jwe "${DEV}" "${SLT}" "${JWE}"
 then
-    echo -e "FAILED TO SET clevis-zfs SLOT JWE: ${DEV}"
-    exit 1
+	echo -e "FAILED TO SET clevis-zfs SLOT JWE: ${DEV}"
+	exit 1
 fi
 
 if ! clevis::zfs::set_dev_cur_gat "${DEV}"
 then
-    echo -e "clevis-zfs METADATA UNLOCK FAILED: ${DEV}"
-    exit 1
+	echo -e "clevis-zfs METADATA UNLOCK FAILED: ${DEV}"
+	exit 1
 fi

@@ -2,37 +2,37 @@
 
 if [ "${0##*/}" = 'chroot' ]
 then
-    MNT="${1}"
+	MNT="${1}"
 fi
 
 for ARG in "${@}"
 do
-    case "${ARG}" in
-        --efi-directory=*)
-            EFI="${ARG#*=}"
-            ;;
-        --target=*)
-            TGT="${ARG#*=}"
-            ;;
-        -\?|-V|--help|--usage|--version)
-            exec "/usr/sbin/${0##*/}" "${@}"
-            ;;
-    esac
+	case "${ARG}" in
+		--efi-directory=*)
+			EFI="${ARG#*=}"
+			;;
+		--target=*)
+			TGT="${ARG#*=}"
+			;;
+		-\?|-V|--help|--usage|--version)
+			exec "/usr/sbin/${0##*/}" "${@}"
+			;;
+	esac
 done
 
 case "${TGT}" in
-    '')
-        # NOP
-        ;;
-    i386-pc)
-        exit 0
-        ;;
-    x86_64-efi)
-        # NOP
-        ;;
-    *)
-        exit 1
-        ;;
+	'')
+		# NOP
+		;;
+	i386-pc)
+		exit 0
+		;;
+	x86_64-efi)
+		# NOP
+		;;
+	*)
+		exit 1
+		;;
 esac
 
 mkdir -p "${MNT}/${EFI:-boot/efi}/EFI/debian"

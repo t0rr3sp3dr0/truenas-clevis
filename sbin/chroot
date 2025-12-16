@@ -1,13 +1,13 @@
 #!/bin/bash -e
 
 case "${2}" in
-    grub-install)
-        . grub-install
-        ;;
-    update-grub)
-        . update-grub
-        ;;
-    *)
-        exec /usr/sbin/chroot "${@}"
-        ;;
+	grub-install)
+		. grub-install
+		;;
+	update-grub)
+		. update-grub
+		;;
+	*)
+		exec /usr/sbin/chroot "${@}"
+		;;
 esac
