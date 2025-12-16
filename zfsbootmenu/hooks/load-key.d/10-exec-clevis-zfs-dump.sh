@@ -1,4 +1,3 @@
-#!/bin/sh
-set -e
+#!/bin/bash -e
 
 exec clevis zfs dump

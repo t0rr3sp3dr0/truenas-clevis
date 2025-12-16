@@ -1,11 +1,9 @@
-#!/bin/sh
-set -e
+#!/bin/bash -e
 
 KEXEC='/zbm/bin/kexec'
 
 cat << EOF > "${KEXEC}"
-#!/bin/sh
-set -e
+#!/bin/bash -e
 
 INITRD='/run/zbm/initrd.cpio'
 

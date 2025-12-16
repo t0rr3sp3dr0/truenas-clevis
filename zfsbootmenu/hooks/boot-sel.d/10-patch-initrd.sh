@@ -1,5 +1,4 @@
-#!/bin/sh
-set -e
+#!/bin/bash -e
 
 echo $'Patching \033[1;33m'"${ZBM_SELECTED_INITRAMFS}"$'\033[0m for \033[0;36m'"${ZBM_SELECTED_BE}"$'\033[0m ...' 1>&2
 
