@@ -1,11 +1,46 @@
-#!/bin/sh
-set -e
+#!/bin/bash -e
+
+function ::dialogrc {
+	cat <<- EOF
+		bindkey formfield TAB FORM_NEXT
+		bindkey formfield DOWN FORM_NEXT
+		bindkey formfield UP FORM_PREV
+		bindkey formbox DOWN FORM_NEXT
+		bindkey formbox TAB FORM_NEXT
+		bindkey formbox UP FORM_PREV
+	EOF
+}
+
+function ::passphrase {
+	while true
+	do
+		DIALOG="$(DIALOGRC=<(::dialogrc) dialog --insecure --output-fd '2' --visit-items --passwordform 'Enter your "boot-pool" encryption passphrase.' '10' '70' '0' 'Passphrase:' '1' '10' '' '0' '30' '25' '50' 'Confirm Passphrase:' '2' '10' '' '2' '30' '25' '50' 3>&2 2>&1 1>&3)"
+		PASSES="$(sed -n '$=' <<< "${DIALOG}")"
+		PASS_0="$(sed -n '1p' <<< "${DIALOG}")"
+		PASS_1="$(sed -n '2p' <<< "${DIALOG}")"
+
+		if [ "${PASSES}" -ne 2 ] || [ -z "${PASS_0}" ] || [ -z "${PASS_1}" ]
+		then
+			dialog --clear --title 'Error' --msgbox 'Empty passphrases are not allowed.' '5' '60' 3>&2 2>&1 1>&3
+			continue
+		fi
+
+		if [ "${PASS_0}" != "${PASS_1}" ]
+		then
+			dialog --clear --title 'Error' --msgbox 'Passphrases do not match.' '5' '60' 3>&2 2>&1 1>&3
+			continue
+		fi
+
+		echo -n "${PASS_0}"
+		break
+	done
+}
 
 D='/run/zfs'
 mkdir -m '0700' -p "${D}"
 
 F="${D}/boot-pool.key"
-echo -n 'nimda_saneurt' > "${F}"
+::passphrase > "${F}"
 
 F='/usr/lib/python3/dist-packages/truenas_installer/install.py'
 sed -Ei 's|"compatibility=grub2"|"compatibility=grub2",\n            "-o", "feature@encryption=enabled"|' "${F}"
@@ -32,12 +67,12 @@ chmod +x "${F}"
 
 if [ -n "${TRUENAS_CLEVIS_DOH_URL}" ]
 then
-    echo "TRUENAS_CLEVIS_DOH_URL=${TRUENAS_CLEVIS_DOH_URL}" >> /etc/environment
+	echo "TRUENAS_CLEVIS_DOH_URL=${TRUENAS_CLEVIS_DOH_URL}" >> /etc/environment
 fi
 
 if [ -n "${TRUENAS_CLEVIS_EFI_URL}" ]
 then
-    echo "TRUENAS_CLEVIS_EFI_URL=${TRUENAS_CLEVIS_EFI_URL}" >> /etc/environment
+	echo "TRUENAS_CLEVIS_EFI_URL=${TRUENAS_CLEVIS_EFI_URL}" >> /etc/environment
 fi
 
 exec login -f "${USER}"
